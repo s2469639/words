@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOEIC Vocab Master - 토익 보카 마스터</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+    /* 3D Flashcard flip effect */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-preserve-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    /* Smooth transitions */
+    .flip-card-inner {
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm transition-all">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-indigo-200">
+          T
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight tracking-tight text-slate-900 flex items-center gap-2">
+            TOEIC Vocab Master
+            <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">2026 EDITION</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-medium">토익 빈출 단어 스마트 암기 시스템</p>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <nav class="flex items-center gap-1 sm:gap-2 p-1 bg-slate-100/80 rounded-xl border border-slate-200 text-sm">
+        <button id="navCardBtn" onclick="switchTab('flashcards')" class="nav-tab px-3.5 py-1.5 rounded-lg font-medium transition-all text-indigo-700 bg-white shadow-xs">
+          플래시카드
+        </button>
+        <button id="navQuizBtn" onclick="switchTab('quiz')" class="nav-tab px-3.5 py-1.5 rounded-lg font-medium transition-all text-slate-600 hover:text-slate-900">
+          실전 퀴즈
+        </button>
+        <button id="navListBtn" onclick="switchTab('wordlist')" class="nav-tab px-3.5 py-1.5 rounded-lg font-medium transition-all text-slate-600 hover:text-slate-900">
+          단어장 목록
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <!-- Stat & Progress Bar Bar -->
+    <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4 w-full md:w-auto">
+        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-slate-500">전체 학습 진도율</div>
+          <div class="flex items-baseline gap-2">
+            <span id="statMasteredCount" class="text-2xl font-bold text-slate-900">0</span>
+            <span class="text-xs text-slate-400">/ <span id="statTotalCount">0</span> 단어 외움</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="w-full md:max-w-md flex-1">
+        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
+          <span>암기 완료율</span>
+          <span id="statPercentageText">0%</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200">
+          <div id="statProgressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Quick Action: Filter by Level & Add Word -->
+      <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+        <select id="levelFilter" onchange="changeFilter()" class="text-sm font-medium border border-slate-300 rounded-xl px-3 py-2 bg-white text-slate-700 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="all">전체 목표 점수대</option>
+          <option value="650">TOEIC 650점 필수</option>
+          <option value="750">TOEIC 750점 실전</option>
+          <option value="850">TOEIC 850+ 고득점</option>
+        </select>
+        <button onclick="resetToDefaultWords()" title="기본 단어 세트 최신화 및 리셋" class="p-2 text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition shadow-xs flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span class="hidden sm:inline">단어팩 초기화</span>
+        </button>
+        <button onclick="openAddModal()" class="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          단어 추가
+        </button>
+      </div>
+    </section>
+
+    <!-- TAB 1: FLASHCARD MODE -->
+    <section id="flashcardSection" class="tab-content flex flex-col items-center">
+      <!-- Card Controls Top (Index & Shuffle) -->
+      <div class="w-full max-w-xl flex items-center justify-between mb-4 px-2 text-sm text-slate-500">
+        <div class="flex items-center gap-2 font-medium">
+          <span id="currentCardIndex">1</span> / <span id="totalCardCount">20</span>
+          <span id="currentLevelBadge" class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">650점</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleBookmarkCurrent()" id="btnBookmarkCard" class="p-2 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-amber-500 transition" title="단어 즐겨찾기">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          </button>
+          <button onclick="shuffleCards()" class="p-2 rounded-lg hover:bg-slate-200 text-slate-600 transition" title="순서 섞기">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Interactive Flashcard -->
+      <div class="perspective-1000 w-full max-w-xl h-96 cursor-pointer select-none" onclick="flipCurrentCard()">
+        <div id="flashcardInner" class="flip-card-inner relative w-full h-full transform-style-preserve-3d shadow-xl rounded-3xl border border-slate-200">
+          
+          <!-- FRONT FACE (English word) -->
+          <div class="backface-hidden absolute inset-0 bg-white rounded-3xl p-8 flex flex-col justify-between items-center text-center">
+            <div class="w-full flex justify-between items-center text-slate-400">
+              <span id="cardPartBadge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600">Part 5 빈출</span>
+              <span class="text-xs flex items-center gap-1 text-slate-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
+                카드를 탭하여 뜻 확인
+              </span>
+            </div>
+
+            <!-- Word & Pronunciation -->
+            <div class="my-auto space-y-3">
+              <div class="flex items-center justify-center gap-3">
+                <h2 id="cardWord" class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">accommodate</h2>
+                <button type="button" onclick="speakWord(event)" class="p-2.5 rounded-full bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-600 transition" title="원어민 발음 듣기">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                </button>
+              </div>
+              <p id="cardPhonetic" class="text-sm font-medium text-slate-400">/əˈkɑːmədeɪt/</p>
+              <span id="cardPos" class="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600">동사 (Verb)</span>
+            </div>
+
+            <div class="text-xs text-slate-400 font-medium">
+              Space 키를 눌러 뒤집거나 화살표 키로 이동 가능
+            </div>
+          </div>
+
+          <!-- BACK FACE (Meaning & Example Sentence) -->
+          <div class="backface-hidden rotate-y-180 absolute inset-0 bg-gradient-to-b from-indigo-900 to-slate-900 text-white rounded-3xl p-8 flex flex-col justify-between">
+            <div class="flex justify-between items-center text-slate-300">
+              <span id="cardBackWord" class="font-bold text-indigo-300 text-base">accommodate</span>
+              <span class="text-xs bg-indigo-800/60 border border-indigo-500/30 px-2 py-0.5 rounded text-indigo-200">정답 & 해설</span>
+            </div>
+
+            <div class="space-y-4 my-auto">
+              <div>
+                <span class="text-xs uppercase tracking-wider text-indigo-300 font-bold block mb-1">뜻</span>
+                <p id="cardMeaning" class="text-2xl font-bold text-white tracking-wide">수용하다, 부응하다, 편의를 도모하다</p>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">토익 빈출 예문</span>
+                <p id="cardExampleEn" class="text-sm font-medium text-slate-200">"The newly renovated auditorium can accommodate up to 500 guests."</p>
+                <p id="cardExampleKo" class="text-xs text-slate-400 mt-1">"새로 리모델링된 강당은 최대 500명의 하객을 수용할 수 있습니다."</p>
+              </div>
+
+              <div class="flex items-center gap-2 text-xs text-slate-300">
+                <span class="font-bold text-indigo-300">연어/콜로케이션:</span>
+                <span id="cardCollocation" class="font-medium text-slate-200">accommodate needs (요구에 부응하다)</span>
+              </div>
+            </div>
+
+            <div class="text-xs text-center text-slate-400">
+              다시 탭하면 앞면으로 돌아갑니다
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Flashcard Action Buttons (Know / Don't Know / Navigation) -->
+      <div class="w-full max-w-xl mt-6 flex items-center justify-between gap-3">
+        <button onclick="prevCard()" class="p-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 transition shadow-sm" title="이전 단어">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+
+        <div class="flex-1 grid grid-cols-2 gap-3">
+          <button onclick="markCurrentCard(false)" class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 active:scale-98 font-bold transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span>다시 볼 단어</span>
+          </button>
+          <button onclick="markCurrentCard(true)" class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-98 font-bold transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>암기 완료!</span>
+          </button>
+        </div>
+
+        <button onclick="nextCard()" class="p-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 transition shadow-sm" title="다음 단어">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: TOEIC QUIZ MODE -->
+    <section id="quizSection" class="tab-content hidden flex flex-col items-center">
+      <div class="w-full max-w-xl bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+        
+        <!-- Quiz Status -->
+        <div class="flex items-center justify-between pb-5 border-b border-slate-100 mb-6">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-indigo-50 text-indigo-700">TOEIC 실전 테스트</span>
+            <span id="quizQuestionCounter" class="text-sm font-semibold text-slate-500">문제 1 / 10</span>
+          </div>
+          <div class="text-sm font-bold text-slate-700">
+            점수: <span id="quizScoreText" class="text-indigo-600 font-extrabold">0</span> 점
+          </div>
+        </div>
+
+        <!-- Quiz Question Box -->
+        <div id="quizQuestionBox" class="text-center py-4">
+          <span class="text-xs text-slate-400 font-medium block mb-1">다음 토익 단어의 올바른 한국어 의미를 고르세요</span>
+          <div class="flex items-center justify-center gap-3">
+            <h3 id="quizWord" class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">mandatory</h3>
+            <button onclick="speakQuizWord()" class="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-indigo-600 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            </button>
+          </div>
+          <p id="quizContextHint" class="text-sm text-slate-500 mt-2 italic bg-slate-50 py-2 px-3 rounded-xl border border-slate-100 inline-block max-w-md">
+            "Attendance at the orientation session is mandatory for all new employees."
+          </p>
+        </div>
+
+        <!-- 4 Multiple Choice Options -->
+        <div id="quizOptionsContainer" class="grid grid-cols-1 gap-3 mt-6">
+          <!-- Dynamically populated options -->
+        </div>
+
+        <!-- Feedback Result Message Box -->
+        <div id="quizFeedback" class="mt-6 p-4 rounded-2xl hidden border transition-all text-sm font-medium"></div>
+
+        <!-- Next Question Button -->
+        <div class="mt-6 flex justify-end">
+          <button id="quizNextBtn" onclick="nextQuizQuestion()" class="hidden px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition shadow-sm">
+            다음 문제 풀기 →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: VOCABULARY LIST & SEARCH -->
+    <section id="wordlistSection" class="tab-content hidden space-y-4">
+      <!-- Search & Filters -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="relative w-full sm:w-80">
+          <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="searchInput" oninput="renderWordList()" placeholder="단어 또는 뜻 검색..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50">
+        </div>
+        
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button id="filterAllBtn" onclick="setListFilter('all')" class="list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white transition">전체</button>
+          <button id="filterMasteredBtn" onclick="setListFilter('mastered')" class="list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">암기완료</button>
+          <button id="filterReviewBtn" onclick="setListFilter('review')" class="list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">복습필요</button>
+          <button id="filterStarBtn" onclick="setListFilter('starred')" class="list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">즐겨찾기 ★</button>
+        </div>
+      </div>
+
+      <!-- Word Table / Grid Cards -->
+      <div id="wordListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: ADD CUSTOM WORD -->
+  <div id="addWordModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100 transform transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">새로운 토익 단어 등록</h3>
+        <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="addWordForm" onsubmit="handleSaveCustomWord(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">영단어 *</label>
+          <input type="text" id="inputWord" required placeholder="예: confidential" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">품사</label>
+            <select id="inputPos" class="w-full text-sm px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="동사">동사 (Verb)</option>
+              <option value="명사">명사 (Noun)</option>
+              <option value="형용사">형용사 (Adjective)</option>
+              <option value="부사">부사 (Adverb)</option>
+              <option value="전치사/접속사">전치사/접속사</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">목표 점수</label>
+            <select id="inputLevel" class="w-full text-sm px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="650">650점</option>
+              <option value="750">750점</option>
+              <option value="850">850점+</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">한국어 뜻 *</label>
+          <input type="text" id="inputMeaning" required placeholder="예: 기밀의, 은밀한" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">토익 예문 (영어)</label>
+          <input type="text" id="inputExampleEn" placeholder="예: All documents must remain strictly confidential." class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">예문 번역 (한국어)</label>
+          <input type="text" id="inputExampleKo" placeholder="예: 모든 문서는 엄격하게 기밀로 유지되어야 합니다." class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeAddModal()" class="px-4 py-2 text-sm font-semibold rounded-xl text-slate-600 hover:bg-slate-100">취소</button>
+          <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Message UI -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-xl flex items-center gap-2">
+    <span id="toastIcon">✔</span>
+    <span id="toastMessage">알림</span>
+  </div>
+
+  <script>
+    /* TOEIC Core Vocabulary Dataset */
+    const DEFAULT_WORDS = [
+      // 650점대 기본 / 필수 단어군
+      {
+        id: 1,
+        word: "accommodate",
+        phonetic: "/əˈkɑːmədeɪt/",
+        pos: "동사",
+        level: "650",
+        meaning: "수용하다, 부응하다, 편의를 도모하다",
+        exampleEn: "The newly renovated auditorium can accommodate up to 500 guests.",
+        exampleKo: "새로 개조된 강당은 최대 500명의 하객을 수용할 수 있습니다.",
+        collocation: "accommodate requests / needs",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 2,
+        word: "eligible",
+        phonetic: "/ˈelɪdʒəbl/",
+        pos: "형용사",
+        level: "650",
+        meaning: "자격이 있는, 적격의",
+        exampleEn: "Only full-time employees are eligible for the annual performance bonus.",
+        exampleKo: "정규직 직원만이 연간 성과급을 받을 자격이 있습니다.",
+        collocation: "eligible for / eligible to do",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 3,
+        word: "confirm",
+        phonetic: "/kənˈfɜːrm/",
+        pos: "동사",
+        level: "650",
+        meaning: "확인하다, 확정하다",
+        exampleEn: "Please confirm your flight reservation by clicking the link below.",
+        exampleKo: "아래 링크를 클릭하여 항공편 예약을 확인해 주시기 바랍니다.",
+        collocation: "confirm a reservation / receipt",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 4,
+        word: "submit",
+        phonetic: "/səbˈmɪt/",
+        pos: "동사",
+        level: "650",
+        meaning: "제출하다, 제시하다",
+        exampleEn: "Applicants must submit their updated resume by 5 PM tomorrow.",
+        exampleKo: "지원자들은 내일 오후 5시까지 업데이트된 이력서를 제출해야 합니다.",
+        collocation: "submit an application / proposal",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 5,
+        word: "notify",
+        phonetic: "/ˈnoʊtɪfaɪ/",
+        pos: "동사",
+        level: "650",
+        meaning: "통지하다, 알리다",
+        exampleEn: "The HR department will notify candidates of interview results via email.",
+        exampleKo: "인사과는 이메일을 통해 지원자들에게 면접 결과를 통보할 것입니다.",
+        collocation: "notify A of B / notify that",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 6,
+        word: "expire",
+        phonetic: "/ɪkˈspaɪər/",
+        pos: "동사",
+        level: "650",
+        meaning: "만료되다, 기한이 끝나다",
+        exampleEn: "Your annual software subscription will expire at the end of this month.",
+        exampleKo: "귀하의 연간 소프트웨어 구독은 이번 달 말에 만료됩니다.",
+        collocation: "contract expires / membership expires",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 7,
+        word: "delegate",
+        phonetic: "/ˈdelɪɡeɪt/",
+        pos: "동사",
+        level: "650",
+        meaning: "(권한·업무를) 위임하다, 대표자",
+        exampleEn: "Effective managers know when and how to delegate tasks to team members.",
+        exampleKo: "유능한 관리자는 팀원들에게 언제 어떻게 업무를 위임할지 알고 있습니다.",
+        collocation: "delegate authority / delegate responsibility",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 8,
+        word: "prominent",
+        phonetic: "/ˈprɑːmɪnənt/",
+        pos: "형용사",
+        level: "650",
+        meaning: "저명한, 두드러진, 눈에 띄는",
+        exampleEn: "The keynote address was delivered by a prominent economic analyst.",
+        exampleKo: "기조연설은 저명한 경제 분석가에 의해 진행되었습니다.",
+        collocation: "prominent figure / prominent feature",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 9,
+        word: "venue",
+        phonetic: "/ˈvenjuː/",
+        pos: "명사",
+        level: "650",
+        meaning: "(행사·회의) 장소, 개최지",
+        exampleEn: "The convention center serves as the perfect venue for international exhibitions.",
+        exampleKo: "컨벤션 센터는 국제 전시회를 위한 완벽한 개최 장소 역할을 합니다.",
+        collocation: "the venue for the conference",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 10,
+        word: "warranty",
+        phonetic: "/ˈwɔːrənti/",
+        pos: "명사",
+        level: "650",
+        meaning: "(품질) 보증서, 보증 기간",
+        exampleEn: "All electronic devices are covered by a two-year manufacturer warranty.",
+        exampleKo: "모든 전자 기기는 제조사의 2년 품질 보증이 적용됩니다.",
+        collocation: "under warranty / extended warranty",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 11,
+        word: "inventory",
+        phonetic: "/ˈɪnvəntɔːri/",
+        pos: "명사",
+        level: "650",
+        meaning: "재고품, 재고 목록",
+        exampleEn: "The store will be temporarily closed on Friday for the annual inventory check.",
+        exampleKo: "해당 매장은 연례 재고 조사를 위해 금요일에 임시 휴무합니다.",
+        collocation: "inventory management / take inventory",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 12,
+        word: "itinerary",
+        phonetic: "/aɪˈtɪnəreri/",
+        pos: "명사",
+        level: "650",
+        meaning: "여행 일정표, 여정",
+        exampleEn: "A detailed flight and conference itinerary has been sent to your inbox.",
+        exampleKo: "상세한 비행 및 콘퍼런스 일정이 귀하의 수신함으로 발송되었습니다.",
+        collocation: "travel itinerary / change an itinerary",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 13,
+        word: "remedy",
+        phonetic: "/ˈremədi/",
+        pos: "명사",
+        level: "650",
+        meaning: "해결책, 바로잡다, 치료",
+        exampleEn: "The technical support team worked swiftly to find a remedy for the server crash.",
+        exampleKo: "기술 지원팀은 서버 다운에 대한 해결책을 찾기 위해 신속히 작업했습니다.",
+        collocation: "a quick remedy / remedy the situation",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 14,
+        word: "punctual",
+        phonetic: "/ˈpʌŋktʃuəl/",
+        pos: "형용사",
+        level: "650",
+        meaning: "시간을 엄수하는, 시간을 잘 지키는",
+        exampleEn: "Clients appreciate that our courier service is always reliable and punctual.",
+        exampleKo: "고객들은 우리 택배 서비스가 언제나 믿음직하고 시간을 엄수하는 점을 높이 평가합니다.",
+        collocation: "punctual delivery / be punctual for",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 15,
+        word: "commute",
+        phonetic: "/kəˈmjuːt/",
+        pos: "동사",
+        level: "650",
+        meaning: "통근하다, 출퇴근",
+        exampleEn: "Many downtown employees commute to work via the rapid express subway line.",
+        exampleKo: "많은 도심 직장인들이 쾌속 급행 지하철을 타고 출퇴근합니다.",
+        collocation: "daily commute / commute to work",
+        mastered: false,
+        starred: false
+      },
+
+      // 750점대 중급 / 실전 단어군
+      {
+        id: 16,
+        word: "mandatory",
+        phonetic: "/ˈmændətɔːri/",
+        pos: "형용사",
+        level: "750",
+        meaning: "의무적인, 필수의",
+        exampleEn: "Attendance at the security training seminar is mandatory for all staff.",
+        exampleKo: "보안 교육 세미나 참석은 모든 직원에게 의무 사항입니다.",
+        collocation: "mandatory attendance / mandatory requirement",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 17,
+        word: "reimburse",
+        phonetic: "/ˌriːɪmˈbɜːrs/",
+        pos: "동사",
+        level: "750",
+        meaning: "변제하다, 환급하다 (경비를 상환하다)",
+        exampleEn: "The company will reimburse travel expenses incurred during the business trip.",
+        exampleKo: "회사는 출장 중 발생한 출장 경비를 환급해 줄 것입니다.",
+        collocation: "reimburse expenses / reimburse employees",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 18,
+        word: "tentative",
+        phonetic: "/ˈtentətɪv/",
+        pos: "형용사",
+        level: "750",
+        meaning: "잠정적인, 임시의",
+        exampleEn: "We reached a tentative agreement pending final approval from the board of directors.",
+        exampleKo: "우리는 이사회의 최종 승인을 기다리며 잠정 합의에 도달했습니다.",
+        collocation: "tentative schedule / tentative agreement",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 19,
+        word: "subsequent",
+        phonetic: "/ˈsʌbsɪkwənt/",
+        pos: "형용사",
+        level: "750",
+        meaning: "그 다음의, 차후의",
+        exampleEn: "Subsequent events proved that our initial market forecast was accurate.",
+        exampleKo: "차후에 일어난 일들은 우리의 초기 시장 전망이 정확했음을 증명해 주었습니다.",
+        collocation: "subsequent to (~이후에) / subsequent years",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 20,
+        word: "prospective",
+        phonetic: "/prəˈspektɪv/",
+        pos: "형용사",
+        level: "750",
+        meaning: "장래의, 유망한, 잠재적인",
+        exampleEn: "The sales representative scheduled product demos with prospective clients.",
+        exampleKo: "영업 담당자는 잠재 고객들과의 제품 시연 일정을 잡았습니다.",
+        collocation: "prospective buyers / prospective clients",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 21,
+        word: "fluctuation",
+        phonetic: "/ˌflʌktʃuˈeɪʃn/",
+        pos: "명사",
+        level: "750",
+        meaning: "변동, 등락, 불안정",
+        exampleEn: "The financial report analyzed recent fluctuations in global energy prices.",
+        exampleKo: "금융 보고서는 최근 국제 에너지 가격의 변동을 분석했습니다.",
+        collocation: "fluctuations in price / market fluctuation",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 22,
+        word: "facilitate",
+        phonetic: "/fəˈsɪlɪteɪt/",
+        pos: "동사",
+        level: "750",
+        meaning: "용이하게 하다, 촉진하다",
+        exampleEn: "The modern software platform was developed to facilitate smoother communication.",
+        exampleKo: "최신 소프트웨어 플랫폼은 보다 원활한 소통을 촉진하기 위해 개발되었습니다.",
+        collocation: "facilitate growth / facilitate discussion",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 23,
+        word: "allocate",
+        phonetic: "/ˈæləkeɪt/",
+        pos: "동사",
+        level: "750",
+        meaning: "(예산·자원을) 배분하다, 할당하다",
+        exampleEn: "The management decided to allocate additional funds to research and development.",
+        exampleKo: "경영진은 연구개발(R&D)에 추가 자금을 배분하기로 결정했습니다.",
+        collocation: "allocate resources / allocate budget",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 24,
+        word: "streamline",
+        phonetic: "/ˈstriːmlaɪn/",
+        pos: "동사",
+        level: "750",
+        meaning: "간소화하다, 능률화하다",
+        exampleEn: "We adopted automated billing systems to streamline administrative procedures.",
+        exampleKo: "행정 절차를 간소화하기 위해 자동 결제 시스템을 도입했습니다.",
+        collocation: "streamline the process / streamline operations",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 25,
+        word: "compensate",
+        phonetic: "/ˈkɑːmpenseɪt/",
+        pos: "동사",
+        level: "750",
+        meaning: "보상하다, 변상하다",
+        exampleEn: "The airline agreed to compensate passengers for the extended flight delay.",
+        exampleKo: "항공사는 장시간 비행 지연에 대해 승객들에게 보상하기로 합의했습니다.",
+        collocation: "compensate for losses / compensate A for B",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 26,
+        word: "consecutive",
+        phonetic: "/kənˈsekjətɪv/",
+        pos: "형용사",
+        level: "750",
+        meaning: "연속적인, 연이은",
+        exampleEn: "The retail chain recorded an increase in revenue for three consecutive quarters.",
+        exampleKo: "그 유통 체인은 3개 분기 연속으로 매출 증가를 기록했습니다.",
+        collocation: "for three consecutive years / consecutive days",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 27,
+        word: "designated",
+        phonetic: "/ˈdezɪɡneɪtɪd/",
+        pos: "형용사",
+        level: "750",
+        meaning: "지정된, 지명된",
+        exampleEn: "Visitors must park their vehicles in the designated visitor parking area.",
+        exampleKo: "방문객들은 지정된 방문객 전용 주차 공간에 차량을 주차해야 합니다.",
+        collocation: "designated smoking area / designated spot",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 28,
+        word: "adhere",
+        phonetic: "/ədˈhɪr/",
+        pos: "동사",
+        level: "750",
+        meaning: "(규칙·원칙을) 고수하다, 충실히 따르다",
+        exampleEn: "All warehouse operators are required to adhere strictly to safety protocols.",
+        exampleKo: "모든 물류창고 작업자는 안전 수칙을 철저히 준수해야 합니다.",
+        collocation: "adhere to policies / adhere to rules",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 29,
+        word: "terminate",
+        phonetic: "/ˈtɜːrmɪneɪt/",
+        pos: "동사",
+        level: "750",
+        meaning: "종료하다, 끝내다, 해지하다",
+        exampleEn: "Either party may terminate the contractual agreement by giving 30 days' notice.",
+        exampleKo: "양 당사자 중 어느 쪽이든 30일 전 통지로 계약을 해지할 수 있습니다.",
+        collocation: "terminate a contract / terminate employment",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 30,
+        word: "unveil",
+        phonetic: "/ˌʌnˈveɪl/",
+        pos: "동사",
+        level: "750",
+        meaning: "(신제품·계획을) 공개하다, 발표하다",
+        exampleEn: "The automaker plans to unveil its next-generation hybrid model at the expo.",
+        exampleKo: "그 자동차 회사는 엑스포에서 차세대 하이브리드 모델을 공개할 계획입니다.",
+        collocation: "unveil a new product / unveil a plan",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 31,
+        word: "overhaul",
+        phonetic: "/ˈoʊvərhɔːl/",
+        pos: "명사",
+        level: "750",
+        meaning: "전면 점검, 전면 개편; 점검하다",
+        exampleEn: "The assembly line will undergo an extensive overhaul during the maintenance period.",
+        exampleKo: "조립 라인은 정기 유지 보수 기간 동안 대대적인 전면 점검을 거치게 됩니다.",
+        collocation: "a complete overhaul / overhaul the system",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 32,
+        word: "preliminary",
+        phonetic: "/prɪˈlɪmɪneri/",
+        pos: "형용사",
+        level: "750",
+        meaning: "예비의, 사전의, 준비 단계의",
+        exampleEn: "Preliminary test results indicate that the newly formulated battery lasts 20% longer.",
+        exampleKo: "예비 시험 결과에 따르면 새로 배합된 배터리의 수명이 20% 더 오래 지속됩니다.",
+        collocation: "preliminary findings / preliminary approval",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 33,
+        word: "utilize",
+        phonetic: "/ˈjuːtəlaɪz/",
+        pos: "동사",
+        level: "750",
+        meaning: "활용하다, 이용하다",
+        exampleEn: "We encourage marketing staff to utilize the new data analysis suite.",
+        exampleKo: "우리는 마케팅 직원들이 새로운 데이터 분석 도구를 적극 활용하도록 장려합니다.",
+        collocation: "utilize resources / fully utilize",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 34,
+        word: "disrupt",
+        phonetic: "/dɪsˈrʌpt/",
+        pos: "동사",
+        level: "750",
+        meaning: "방해하다, 혼란을 주다, 지장을 초래하다",
+        exampleEn: "Severe winter blizzards disrupted public transit services across the region.",
+        exampleKo: "극심한 겨울 눈보라로 인해 해당 지역 전역의 대중교통 운행에 큰 차질이 빚어졌습니다.",
+        collocation: "disrupt traffic / disrupt the market",
+        mastered: false,
+        starred: false
+      },
+
+      // 850점+ 고득점 / 변별력 단어군
+      {
+        id: 35,
+        word: "feasible",
+        phonetic: "/ˈfiːzəbl/",
+        pos: "형용사",
+        level: "850",
+        meaning: "실행 가능한, 실현 가능한",
+        exampleEn: "The committee is analyzing whether the proposed factory expansion is economically feasible.",
+        exampleKo: "위원회는 제안된 공장 증설 계획이 경제적으로 실현 가능한지 분석 중입니다.",
+        collocation: "a feasible alternative / economically feasible",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 36,
+        word: "compliance",
+        phonetic: "/kəmˈplaɪəns/",
+        pos: "명사",
+        level: "850",
+        meaning: "(법규·지침 등의) 준수, 따름",
+        exampleEn: "All manufacturing procedures must be in strict compliance with environmental regulations.",
+        exampleKo: "모든 제조 공정은 환경 규정을 엄격히 준수하여 이루어져야 합니다.",
+        collocation: "in compliance with / regulatory compliance",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 37,
+        word: "lucrative",
+        phonetic: "/ˈluːkrətɪv/",
+        pos: "형용사",
+        level: "850",
+        meaning: "수익성이 좋은, 돈벌이가 되는",
+        exampleEn: "Entering the cloud infrastructure market proved to be an exceptionally lucrative venture.",
+        exampleKo: "클라우드 인프라 시장 진출은 대단히 수익성이 높은 사업임이 입증되었습니다.",
+        collocation: "a lucrative contract / lucrative business",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 38,
+        word: "expedite",
+        phonetic: "/ˈekspədaɪt/",
+        pos: "동사",
+        level: "850",
+        meaning: "신속히 처리하다, 진척시키다",
+        exampleEn: "Please pay an additional priority fee if you need to expedite the delivery.",
+        exampleKo: "배송 절차를 신속하게 앞당겨야 할 경우 추가 특송 요금을 지불해 주십시오.",
+        collocation: "expedite delivery / expedite processing",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 39,
+        word: "stringent",
+        phonetic: "/ˈstrɪndʒənt/",
+        pos: "형용사",
+        level: "850",
+        meaning: "(규정·요건 등이) 엄격한, 엄중한",
+        exampleEn: "The pharmaceutical facility adheres to stringent quality control standards.",
+        exampleKo: "그 제약 시설은 엄격한 품질 관리 기준을 철저히 준수합니다.",
+        collocation: "stringent regulations / stringent standards",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 40,
+        word: "scrutinize",
+        phonetic: "/ˈskruːtənaɪz/",
+        pos: "동사",
+        level: "850",
+        meaning: "면밀히 조사하다, 세심히 살피다",
+        exampleEn: "Government auditors will thoroughly scrutinize the company's financial records.",
+        exampleKo: "정부 감사관들이 회사의 재무 기록을 철저하게 면밀 조사할 예정입니다.",
+        collocation: "scrutinize documents / carefully scrutinize",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 41,
+        word: "waive",
+        phonetic: "/weɪv/",
+        pos: "동사",
+        level: "850",
+        meaning: "(권리·수수료 등을) 포기하다, 면제하다",
+        exampleEn: "The bank agreed to waive the overseas transaction fees for premium cardholders.",
+        exampleKo: "은행은 우수 카드 회원들에게 해외 결제 수수료를 면제해 주기로 합의했습니다.",
+        collocation: "waive the fee / waive the right",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 42,
+        word: "contingent",
+        phonetic: "/kənˈtɪndʒənt/",
+        pos: "형용사",
+        level: "850",
+        meaning: "~에 따라 결정되는, 여하에 달린",
+        exampleEn: "Final approval of the construction loan is contingent upon zoning clearance.",
+        exampleKo: "건축 대출의 최종 승인은 토지 용도 지정 승인 여부에 달려 있습니다.",
+        collocation: "contingent on / contingent upon",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 43,
+        word: "mitigate",
+        phonetic: "/ˈmɪtɪɡeɪt/",
+        pos: "동사",
+        level: "850",
+        meaning: "(고통·피해·위험을) 완화하다, 경감시키다",
+        exampleEn: "The insurance policy is designed to mitigate financial risks caused by natural disasters.",
+        exampleKo: "해당 보험 상품은 자연재해로 인한 재정적 위험을 완화하도록 설계되었습니다.",
+        collocation: "mitigate risk / mitigate damage",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 44,
+        word: "discrepancy",
+        phonetic: "/dɪˈskrepənsi/",
+        pos: "명사",
+        level: "850",
+        meaning: "(진술·수치 간의) 불일치, 차이",
+        exampleEn: "The internal accounting audit revealed a noticeable discrepancy in shipping invoices.",
+        exampleKo: "내부 회계 감사 결과 운송 송장 내역에서 눈에 띄는 불일치가 발견되었습니다.",
+        collocation: "discrepancy between / notice a discrepancy",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 45,
+        word: "apprehensive",
+        phonetic: "/ˌæprɪˈhensɪv/",
+        pos: "형용사",
+        level: "850",
+        meaning: "우려하는, 걱정하는",
+        exampleEn: "Investors are apprehensive about impending rate hikes by the central bank.",
+        exampleKo: "투자자들은 중앙은행의 임박한 금리 인상에 대해 우려하고 있습니다.",
+        collocation: "apprehensive about / apprehensive that",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 46,
+        word: "unprecedented",
+        phonetic: "/ʌnˈpresɪdentɪd/",
+        pos: "형용사",
+        level: "850",
+        meaning: "전례 없는, 유례없는",
+        exampleEn: "The tech startup enjoyed unprecedented growth following its major product update.",
+        exampleKo: "그 기술 스타트업은 주요 제품 업데이트 이후 유례없는 폭발적 성장을 누렸습니다.",
+        collocation: "unprecedented growth / unprecedented demand",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 47,
+        word: "stagnant",
+        phonetic: "/ˈstæɡnənt/",
+        pos: "형용사",
+        level: "850",
+        meaning: "침체된, 정체된, 흐르지 않는",
+        exampleEn: "Economists are concerned that wage growth has remained stagnant over the last decade.",
+        exampleKo: "경제학자들은 지난 10년 동안 임금 상승률이 정체되어 있는 것에 대해 우려하고 있습니다.",
+        collocation: "stagnant economy / stagnant market",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 48,
+        word: "inadvertently",
+        phonetic: "/ˌɪnədˈvɜːrtəntli/",
+        pos: "부사",
+        level: "850",
+        meaning: "부주의로, 무심코, 우연히",
+        exampleEn: "A confidential spreadsheet was inadvertently sent to the client list.",
+        exampleKo: "대외비 스프레드시트가 부주의로 인해 고객 명단으로 전송되었습니다.",
+        collocation: "inadvertently deleted / inadvertently omitted",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 49,
+        word: "reiterate",
+        phonetic: "/riˈɪtəreɪt/",
+        pos: "동사",
+        level: "850",
+        meaning: "(이미 한 말을) 되풀이하다, 거듭 강조하다",
+        exampleEn: "The CEO reiterated the company's long-term commitment to sustainability.",
+        exampleKo: "CEO는 지속가능성에 대한 회사의 장기적인 의지를 거듭 강조했습니다.",
+        collocation: "reiterate that / reiterate the importance",
+        mastered: false,
+        starred: false
+      },
+      {
+        id: 50,
+        word: "discretionary",
+        phonetic: "/dɪˈskreʃəneri/",
+        pos: "형용사",
+        level: "850",
+        meaning: "자유 재량의, 임의로 결정할 수 있는",
+        exampleEn: "Department directors have discretionary funds to reward high-performing teams.",
+        exampleKo: "부서장들은 우수 성과 팀을 포상할 수 있는 재량 자금을 보유하고 있습니다.",
+        collocation: "discretionary spending / discretionary power",
+        mastered: false,
+        starred: false
+      }
+    ];
+
+    let words = [];
+    let currentFilteredList = [];
+    let currentCardIndex = 0;
+    let isFlipped = false;
+    let currentFilterLevel = "all";
+    let currentListTabFilter = "all";
+
+    // Quiz states
+    let quizQuestions = [];
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+    let quizAnswerSubmitted = false;
+
+    // Load state on startup
+    const STORAGE_KEY = 'toeic_vocab_words_v2';
+
+    function initData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length >= DEFAULT_WORDS.length) {
+            words = parsed;
+          } else {
+            // Merge custom user added words with updated default words
+            const userAdded = Array.isArray(parsed) ? parsed.filter(w => w.id > 1000) : [];
+            words = [...DEFAULT_WORDS, ...userAdded];
+            saveWords();
+          }
+        } else {
+          words = [...DEFAULT_WORDS];
+          saveWords();
+        }
+      } catch(e) {
+        words = [...DEFAULT_WORDS];
+      }
+      applyFilter();
+      updateDashboardStats();
+      renderFlashcard();
+      renderWordList();
+      setupKeyboardShortcuts();
+    }
+
+    function resetToDefaultWords() {
+      words = [...DEFAULT_WORDS];
+      saveWords();
+      applyFilter();
+      renderFlashcard();
+      renderWordList();
+      showToast(`단어장이 50개 핵심 토익 단어 세트로 갱신되었습니다!`);
+    }
+
+    function saveWords() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+      } catch (e) {
+        console.error("Local storage error:", e);
+      }
+      updateDashboardStats();
+    }
+
+    function applyFilter() {
+      if (currentFilterLevel === 'all') {
+        currentFilteredList = [...words];
+      } else {
+        currentFilteredList = words.filter(w => w.level === currentFilterLevel);
+      }
+      if (currentFilteredList.length === 0) {
+        currentFilteredList = [...words];
+      }
+      currentCardIndex = 0;
+      isFlipped = false;
+    }
+
+    function changeFilter() {
+      currentFilterLevel = document.getElementById('levelFilter').value;
+      applyFilter();
+      renderFlashcard();
+      showToast(`필터가 변경되었습니다: ${currentFilterLevel === 'all' ? '전체' : currentFilterLevel + '점대'}`);
+    }
+
+    function updateDashboardStats() {
+      const total = words.length;
+      const mastered = words.filter(w => w.mastered).length;
+      const pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+
+      document.getElementById('statTotalCount').innerText = total;
+      document.getElementById('statMasteredCount').innerText = mastered;
+      document.getElementById('statPercentageText').innerText = `${pct}%`;
+      document.getElementById('statProgressBar').style.width = `${pct}%`;
+    }
+
+    function renderFlashcard() {
+      if (currentFilteredList.length === 0) return;
+      const card = currentFilteredList[currentCardIndex];
+
+      document.getElementById('currentCardIndex').innerText = currentCardIndex + 1;
+      document.getElementById('totalCardCount').innerText = currentFilteredList.length;
+      document.getElementById('currentLevelBadge').innerText = `${card.level}점 목표`;
+
+      // Front
+      document.getElementById('cardWord').innerText = card.word;
+      document.getElementById('cardPhonetic').innerText = card.phonetic || '/.../';
+      document.getElementById('cardPos').innerText = `${card.pos}`;
+      document.getElementById('cardPartBadge').innerText = card.mastered ? '암기 완료됨' : '학습 진행중';
+      document.getElementById('cardPartBadge').className = card.mastered 
+        ? 'text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600'
+        : 'text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600';
+
+      // Back
+      document.getElementById('cardBackWord').innerText = card.word;
+      document.getElementById('cardMeaning').innerText = card.meaning;
+      document.getElementById('cardExampleEn').innerText = `"${card.exampleEn}"`;
+      document.getElementById('cardExampleKo').innerText = `"${card.exampleKo}"`;
+      document.getElementById('cardCollocation').innerText = card.collocation || '토익 필수 빈출 표현';
+
+      // Star icon
+      const starBtn = document.getElementById('btnBookmarkCard');
+      if (card.starred) {
+        starBtn.classList.remove('text-slate-400');
+        starBtn.classList.add('text-amber-500');
+      } else {
+        starBtn.classList.remove('text-amber-500');
+        starBtn.classList.add('text-slate-400');
+      }
+
+      // Reset flip back to front
+      const inner = document.getElementById('flashcardInner');
+      isFlipped = false;
+      inner.classList.remove('rotate-y-180');
+    }
+
+    function flipCurrentCard() {
+      const inner = document.getElementById('flashcardInner');
+      isFlipped = !isFlipped;
+      if (isFlipped) {
+        inner.classList.add('rotate-y-180');
+      } else {
+        inner.classList.remove('rotate-y-180');
+      }
+    }
+
+    function nextCard() {
+      if (currentFilteredList.length === 0) return;
+      currentCardIndex = (currentCardIndex + 1) % currentFilteredList.length;
+      renderFlashcard();
+    }
+
+    function prevCard() {
+      if (currentFilteredList.length === 0) return;
+      currentCardIndex = (currentCardIndex - 1 + currentFilteredList.length) % currentFilteredList.length;
+      renderFlashcard();
+    }
+
+    function shuffleCards() {
+      for (let i = currentFilteredList.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [currentFilteredList[i], currentFilteredList[j]] = [currentFilteredList[j], currentFilteredList[i]];
+      }
+      currentCardIndex = 0;
+      renderFlashcard();
+      showToast('단어 카드를 랜덤하게 섞었습니다.');
+    }
+
+    function markCurrentCard(isMastered) {
+      if (currentFilteredList.length === 0) return;
+      const currentItem = currentFilteredList[currentCardIndex];
+      const found = words.find(w => w.id === currentItem.id);
+      if (found) {
+        found.mastered = isMastered;
+        currentItem.mastered = isMastered;
+        saveWords();
+        showToast(isMastered ? '✨ 암기 완료 단어로 표시했습니다!' : '📖 복습 단어로 지정했습니다.');
+      }
+      nextCard();
+    }
+
+    function toggleBookmarkCurrent() {
+      if (currentFilteredList.length === 0) return;
+      const currentItem = currentFilteredList[currentCardIndex];
+      const found = words.find(w => w.id === currentItem.id);
+      if (found) {
+        found.starred = !found.starred;
+        currentItem.starred = found.starred;
+        saveWords();
+        renderFlashcard();
+        showToast(found.starred ? '단어를 즐겨찾기에 추가했습니다.' : '즐겨찾기에서 제거했습니다.');
+      }
+    }
+
+    function speakWord(e) {
+      if (e) e.stopPropagation();
+      if (currentFilteredList.length === 0) return;
+      const text = currentFilteredList[currentCardIndex].word;
+      executeSpeech(text);
+    }
+
+    function speakQuizWord() {
+      if (!quizQuestions[currentQuizIndex]) return;
+      executeSpeech(quizQuestions[currentQuizIndex].word);
+    }
+
+    function executeSpeech(text) {
+      if (!('speechSynthesis' in window)) {
+        showToast('이 브라우저는 음성 합성을 지원하지 않습니다.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function startQuiz() {
+      // Pick 10 random words or as many as available
+      const pool = [...words].sort(() => 0.5 - Math.random());
+      const selected = pool.slice(0, Math.min(10, pool.length));
+      
+      quizQuestions = selected.map(correctWord => {
+        // Pick 3 wrong meanings
+        const otherMeanings = words
+          .filter(w => w.id !== correctWord.id)
+          .map(w => w.meaning)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3);
+
+        const options = [...otherMeanings, correctWord.meaning].sort(() => 0.5 - Math.random());
+        return {
+          word: correctWord.word,
+          exampleEn: correctWord.exampleEn,
+          correctMeaning: correctWord.meaning,
+          options: options,
+          answered: null,
+          isCorrect: null
+        };
+      });
+
+      currentQuizIndex = 0;
+      quizScore = 0;
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      if (quizQuestions.length === 0) return;
+      quizAnswerSubmitted = false;
+
+      const q = quizQuestions[currentQuizIndex];
+      document.getElementById('quizQuestionCounter').innerText = `문제 ${currentQuizIndex + 1} / ${quizQuestions.length}`;
+      document.getElementById('quizScoreText').innerText = quizScore;
+      document.getElementById('quizWord').innerText = q.word;
+      document.getElementById('quizContextHint').innerText = `"${q.exampleEn}"`;
+
+      const optionsDiv = document.getElementById('quizOptionsContainer');
+      optionsDiv.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "quiz-opt text-left p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800 font-medium transition flex items-center justify-between";
+        btn.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">${idx + 1}</span>
+            <span>${opt}</span>
+          </div>
+        `;
+        btn.onclick = () => selectQuizAnswer(opt, btn);
+        optionsDiv.appendChild(btn);
+      });
+
+      const feedback = document.getElementById('quizFeedback');
+      feedback.className = "mt-6 p-4 rounded-2xl hidden border transition-all text-sm font-medium";
+      document.getElementById('quizNextBtn').classList.add('hidden');
+    }
+
+    function selectQuizAnswer(selectedOption, clickedBtn) {
+      if (quizAnswerSubmitted) return;
+      quizAnswerSubmitted = true;
+
+      const q = quizQuestions[currentQuizIndex];
+      const isCorrect = selectedOption === q.correctMeaning;
+      q.answered = selectedOption;
+      q.isCorrect = isCorrect;
+
+      const buttons = document.querySelectorAll('.quiz-opt');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('hover:border-indigo-400', 'hover:bg-indigo-50/40');
+        if (btn.innerText.includes(q.correctMeaning)) {
+          btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800', 'font-bold');
+        } else if (btn === clickedBtn && !isCorrect) {
+          btn.classList.add('bg-rose-50', 'border-rose-400', 'text-rose-700');
+        }
+      });
+
+      const feedback = document.getElementById('quizFeedback');
+      feedback.classList.remove('hidden');
+
+      if (isCorrect) {
+        quizScore += 10;
+        document.getElementById('quizScoreText').innerText = quizScore;
+        feedback.className = "mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2";
+        feedback.innerHTML = `<span>🎉 <strong>정답입니다!</strong> 실전 감각이 훌륭합니다.</span>`;
+      } else {
+        feedback.className = "mt-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2";
+        feedback.innerHTML = `<span>❌ <strong>오답입니다.</strong> 정답: <span class="underline">${q.correctMeaning}</span></span>`;
+      }
+
+      document.getElementById('quizNextBtn').classList.remove('hidden');
+    }
+
+    function nextQuizQuestion() {
+      if (currentQuizIndex < quizQuestions.length - 1) {
+        currentQuizIndex++;
+        renderQuizQuestion();
+      } else {
+        // Quiz Complete
+        showQuizResults();
+      }
+    }
+
+    function showQuizResults() {
+      const box = document.getElementById('quizQuestionBox');
+      const optionsDiv = document.getElementById('quizOptionsContainer');
+      const feedback = document.getElementById('quizFeedback');
+      const nextBtn = document.getElementById('quizNextBtn');
+
+      nextBtn.classList.add('hidden');
+      feedback.classList.add('hidden');
+      optionsDiv.innerHTML = '';
+
+      box.innerHTML = `
+        <div class="py-8 space-y-4">
+          <div class="inline-flex p-4 rounded-full bg-indigo-50 text-indigo-600 mb-2">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900">퀴즈 완료!</h2>
+          <p class="text-slate-600">총 100점 만점 중 <span class="text-3xl font-extrabold text-indigo-600">${quizScore}</span> 점을 획득했습니다!</p>
+          <div class="pt-4 flex justify-center gap-3">
+            <button onclick="startQuiz()" class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow transition">다시 도전하기</button>
+            <button onclick="switchTab('flashcards')" class="px-6 py-3 rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition">플래시카드로 복습</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function setListFilter(type) {
+      currentListTabFilter = type;
+      const buttons = document.querySelectorAll('.list-filter-btn');
+      buttons.forEach(b => {
+        b.className = "list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+      });
+
+      if (type === 'all') document.getElementById('filterAllBtn').className = "list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white transition";
+      if (type === 'mastered') document.getElementById('filterMasteredBtn').className = "list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition";
+      if (type === 'review') document.getElementById('filterReviewBtn').className = "list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition";
+      if (type === 'starred') document.getElementById('filterStarBtn').className = "list-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-white transition";
+
+      renderWordList();
+    }
+
+    function renderWordList() {
+      const search = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const grid = document.getElementById('wordListGrid');
+      grid.innerHTML = '';
+
+      let list = words.filter(item => {
+        const matchesQuery = item.word.toLowerCase().includes(search) || item.meaning.includes(search);
+        if (!matchesQuery) return false;
+        if (currentListTabFilter === 'mastered') return item.mastered;
+        if (currentListTabFilter === 'review') return !item.mastered;
+        if (currentListTabFilter === 'starred') return item.starred;
+        return true;
+      });
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 text-slate-400">
+            <p class="font-medium text-base">일치하는 단어가 없습니다.</p>
+            <p class="text-xs mt-1">새 단어를 등록하거나 검색 조건을 변경해보세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-300 transition-all shadow-xs hover:shadow-md flex flex-col justify-between space-y-3";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-lg text-slate-900">${item.word}</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">${item.pos}</span>
+              </div>
+              <button onclick="toggleStarWord(${item.id})" class="p-1 rounded-md text-slate-300 hover:text-amber-500 ${item.starred ? 'text-amber-500' : ''}">
+                ★
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 font-medium">${item.phonetic || ''}</p>
+            <p class="text-sm font-bold text-indigo-700 mt-2">${item.meaning}</p>
+            <p class="text-xs text-slate-600 mt-2 italic bg-slate-50 p-2 rounded-lg border border-slate-100">
+              "${item.exampleEn}"
+            </p>
+          </div>
+          
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="font-semibold ${item.mastered ? 'text-emerald-600' : 'text-slate-400'}">
+              ${item.mastered ? '✔ 암기완료' : '○ 학습중'}
+            </span>
+            <div class="flex gap-2">
+              <button onclick="executeSpeech('${item.word}')" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">발음</button>
+              <button onclick="toggleMasteryWord(${item.id})" class="px-2 py-1 rounded ${item.mastered ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'} font-medium">
+                ${item.mastered ? '취소' : '암기'}
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleStarWord(id) {
+      const target = words.find(w => w.id === id);
+      if (target) {
+        target.starred = !target.starred;
+        saveWords();
+        renderWordList();
+      }
+    }
+
+    function toggleMasteryWord(id) {
+      const target = words.find(w => w.id === id);
+      if (target) {
+        target.mastered = !target.mastered;
+        saveWords();
+        renderWordList();
+        renderFlashcard();
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('text-indigo-700', 'bg-white', 'shadow-xs');
+        el.classList.add('text-slate-600');
+      });
+
+      if (tabId === 'flashcards') {
+        document.getElementById('flashcardSection').classList.remove('hidden');
+        document.getElementById('navCardBtn').classList.add('text-indigo-700', 'bg-white', 'shadow-xs');
+        document.getElementById('navCardBtn').classList.remove('text-slate-600');
+        renderFlashcard();
+      } else if (tabId === 'quiz') {
+        document.getElementById('quizSection').classList.remove('hidden');
+        document.getElementById('navQuizBtn').classList.add('text-indigo-700', 'bg-white', 'shadow-xs');
+        document.getElementById('navQuizBtn').classList.remove('text-slate-600');
+        startQuiz();
+      } else if (tabId === 'wordlist') {
+        document.getElementById('wordlistSection').classList.remove('hidden');
+        document.getElementById('navListBtn').classList.add('text-indigo-700', 'bg-white', 'shadow-xs');
+        document.getElementById('navListBtn').classList.remove('text-slate-600');
+        renderWordList();
+      }
+    }
+
+    function openAddModal() {
+      document.getElementById('addWordModal').classList.remove('hidden');
+      document.getElementById('addWordModal').classList.add('flex');
+    }
+
+    function closeAddModal() {
+      document.getElementById('addWordModal').classList.add('hidden');
+      document.getElementById('addWordModal').classList.remove('flex');
+      document.getElementById('addWordForm').reset();
+    }
+
+    function handleSaveCustomWord(e) {
+      e.preventDefault();
+      const word = document.getElementById('inputWord').value.trim();
+      const pos = document.getElementById('inputPos').value;
+      const level = document.getElementById('inputLevel').value;
+      const meaning = document.getElementById('inputMeaning').value.trim();
+      const exampleEn = document.getElementById('inputExampleEn').value.trim() || `${word} in business context.`;
+      const exampleKo = document.getElementById('inputExampleKo').value.trim() || '예문이 등록되지 않았습니다.';
+
+      if (!word || !meaning) return;
+
+      const newWord = {
+        id: Date.now(),
+        word: word,
+        phonetic: '',
+        pos: pos,
+        level: level,
+        meaning: meaning,
+        exampleEn: exampleEn,
+        exampleKo: exampleKo,
+        collocation: '',
+        mastered: false,
+        starred: false
+      };
+
+      words.unshift(newWord);
+      saveWords();
+      applyFilter();
+      renderFlashcard();
+      renderWordList();
+      closeAddModal();
+      showToast(`'${word}' 단어가 추가되었습니다!`);
+    }
+
+    function setupKeyboardShortcuts() {
+      window.addEventListener('keydown', (e) => {
+        // If typing in input or modal open, ignore
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+        const isCardTab = !document.getElementById('flashcardSection').classList.contains('hidden');
+        if (!isCardTab) return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          flipCurrentCard();
+        } else if (e.code === 'ArrowRight') {
+          nextCard();
+        } else if (e.code === 'ArrowLeft') {
+          prevCard();
+        } else if (e.code === 'Digit1') {
+          markCurrentCard(false);
+        } else if (e.code === 'Digit2') {
+          markCurrentCard(true);
+        }
+      });
+    }
+
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toastMessage');
+      msg.innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2500);
+    }
+
+    // Initialize application
+    window.onload = function() {
+      initData();
+    };
+  </script>
+</body>
+</html>
